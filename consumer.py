@@ -24,8 +24,8 @@ def receive():
 
 def main():
     leader = send_request(url=f"http://127.0.0.1:{zookeeper_port}/find_leader")
-    res = send_request(url=f"http://127.0.0.1:{leader}/subscribe_topic/{topic_name}")
-    print(leader, f"http://127.0.0.1:{leader}/subscribe_topic/{topic_name}")
+    res = send_request(url=f"http://127.0.0.1:{leader}/create_topic/{topic_name}")
+    print(leader, f"http://127.0.0.1:{leader}/create_topic/{topic_name}")
     app.run(port=6060)
     
 
