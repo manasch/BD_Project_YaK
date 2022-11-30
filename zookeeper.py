@@ -41,7 +41,7 @@ def polling(args):
                 if leader == args and brokers != []:
                     leader = random.choice(brokers)
                     print("------------New Leader----------", leader)
-                print(args, "has died$$$$$$$$")
+                print(f"-------{args}, has died-------")
             else:
                 print("----Not Started----", args)        
 

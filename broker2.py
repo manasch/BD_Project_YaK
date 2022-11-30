@@ -1,5 +1,7 @@
+import json
 from pathlib import Path
-from flask import Flask
+import requests
+from flask import Flask, request
 app = Flask(__name__)
 
 root = Path.cwd().resolve()
@@ -10,8 +12,15 @@ broker_fs = (root / filename).resolve()
 def main():
     return "Home"
 
-@app.route('/create_topic/<topic>')
-def create_topic(topic):
+@app.route('/send_topic/<topic>', methods=['POST'])
+def send_topic(topic):
+    data = json.loads(request.data.decode())
+    print(data)
+    requests.post('http://127.0.0.1:')
+    return "sent"
+
+@app.route('/subscribe_topic/<topic>')
+def subscribe_topic(topic):
     if not broker_fs.exists():
         broker_fs.mkdir()
     
@@ -19,7 +28,8 @@ def create_topic(topic):
     if not topic_fs.exists():
         topic_fs.mkdir()
     
-    return "Create"
+    print("subbed")
+    return "subscribed"
 
 @app.route('/polling')
 def poll():
@@ -27,5 +37,4 @@ def poll():
 
 
 if __name__ == "__main__":
-    # print(filename)
     app.run()
