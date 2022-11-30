@@ -5,7 +5,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 root = Path.cwd().resolve()
-filename = "Broker_2"
+filename = "Broker_1"
 subscribe_list = root / "subscribe_list.json"
 broker_fs = (root / filename).resolve()
 
@@ -48,6 +48,8 @@ def subscribe_topic(topic):
                     data[topic] = [port]
                 elif port not in data[topic]:
                     data[topic].append(port)
+                else:
+                    return "port already registered"
             except Exception as e:
                 data[topic] = [port]
     
@@ -56,9 +58,22 @@ def subscribe_topic(topic):
     
     return "subscribed"
 
-@app.route('/unsub_topic/<topic>')
+@app.route('/unsub_topic/<topic>', methods=['POST'])
 def unsub_topic(topic):
-    print(topic)
+    port = json.loads(request.data.decode())['port']
+    with open(subscribe_list) as f:
+        data = json.load(f)
+    
+    if port in data[topic]:
+        data[topic].remove(port)
+        if data[topic] == []:
+            del data[topic]
+    else:
+        return "not subbed to this"
+    
+    with open(subscribe_list, "w") as f:
+        json.dump(data, f)
+
     return "unsubbed"
 
 @app.route('/polling')
