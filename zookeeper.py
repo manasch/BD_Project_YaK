@@ -7,33 +7,44 @@ from flask import Flask
 import requests
 
 root = Path.cwd().resolve()
-brokers = [5000, 5001, 5002]
-leader = 5001
+brokers = []
+leader = None
 app = Flask(__name__)
 
 def polling(args):
     global leader
+
+    flag = False
     while True:
         try:
-            
             res = requests.get(f"http://127.0.0.1:{args}/polling", timeout=1)
+            flag = True
+
+            if args not in brokers:
+                brokers.append(args)
+            
+            # The first broker to start
+            if not leader:
+                leader = args
 
             if leader == args:
                 print("---------Leader---------", args)
             else:
                 print("---------Follower----------", args)
-
-            if args not in brokers:
-                brokers.append(args)
             
             print(res, threading.get_native_id(), brokers)
             time.sleep(2)
         except Exception as e:
-            if leader == args:
+            if flag:
+                flag = False
                 brokers.remove(args)
-                leader = random.choice(brokers)
-                print("------------New Leader----------", leader)
-            print(args, "has died$$$$$$$$")
+                if leader == args and brokers != []:
+                    leader = random.choice(brokers)
+                    print("------------New Leader----------", leader)
+                print(args, "has died$$$$$$$$")
+            else:
+                print("----Not Started----", args)        
+
 
 @app.route('/find_leader')
 def find_leader():
@@ -41,8 +52,11 @@ def find_leader():
 
 def main():
     broker1 = threading.Thread(target=polling, args=(5000,))
+    broker1.daemon = True
     broker2 = threading.Thread(target=polling, args=(5001,))
+    broker2.daemon = True
     broker3 = threading.Thread(target=polling, args=(5002,))
+    broker3.daemon = True
     broker1.start()
     broker2.start()
     broker3.start()
