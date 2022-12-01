@@ -10,7 +10,7 @@ import requests
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--port", help="zookeeper port", type=int, required=True)
 parser.add_argument("-b", "--brokers", help="Broker ports")
-parser.add_argument("-t", "--time", help="polling interval", default=2)
+parser.add_argument("-t", "--time", help="polling interval", type=int, default=2)
 pargs = parser.parse_args()
 
 root = Path.cwd().resolve()

@@ -77,9 +77,13 @@ def send_topic(topic):
     timestamp = dat['time']
     _id = dat['_id']
 
-    with open(broker_fs / topic / f"p{timehash(timestamp)}", 'a+') as f:
-        f.seek(0)
-        f.write(f"{timestamp} {topic_data}\n")
+    try:
+        with open(broker_fs / topic / f"p{timehash(timestamp)}", 'a+') as f:
+            f.write(f"{timestamp} {topic_data}\n")
+    except Exception as e:
+        create_topic(topic)
+        with open(broker_fs / topic / f"p{timehash(timestamp)}", 'a+') as f:
+            f.write(f"{timestamp} {topic_data}\n")
 
     with open("subscribe_list.json") as f:
         ports = json.load(f)[topic]
