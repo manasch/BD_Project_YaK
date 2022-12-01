@@ -36,7 +36,7 @@ def post_request(url, data):
             res = requests.post(url, json=data, timeout=1)
             flag = False
         except Exception as e:
-            print("Retrying..", e)
+            print("Retrying..")
         
     return res.content.decode()
 
