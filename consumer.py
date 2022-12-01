@@ -54,7 +54,7 @@ def main():
     get_request(f"http://127.0.0.1:{get_leader()}/create_topic/{args.topic}")
     post_request(f"http://127.0.0.1:{get_leader()}/subscribe_topic/{args.topic}", data={"port": args.cport, "time": int(time.time()), "_id": args.cid, "beg": args.from_beginning})
     
-    app.run(port=args.cport)
+    app.run(port=args.cport, debug=False, use_reloader=False)
 
 if __name__ == "__main__":
     try:
