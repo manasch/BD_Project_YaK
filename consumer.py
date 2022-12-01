@@ -10,7 +10,7 @@ parser.add_argument("-z", "--port", help="zookeeper port", type=int, required=Tr
 parser.add_argument("-c", "--cport", help="consumer port", type=int, required=True)
 parser.add_argument("-t", "--topic", help="enter the topic name", required=True)
 parser.add_argument("-i", "--cid", help="enter the cid", required=True)
-parser.add_argument("-b", "--from-beginning", help="receive topics information from start")
+parser.add_argument("-b", "--frombeginning", type=int, help="receive topics information from start")
 args = parser.parse_args()
 
 app = Flask(__name__)
@@ -47,7 +47,8 @@ def receive():
 
 def main():
     get_request(f"http://127.0.0.1:{get_leader()}/create_topic/{args.topic}")
-    post_request(f"http://127.0.0.1:{get_leader()}/subscribe_topic/{args.topic}", data={"port": args.cport, "time": int(time.time()), "_id": args.cid})
+    post_request(f"http://127.0.0.1:{get_leader()}/subscribe_topic/{args.topic}", data={"port": args.cport, "time": int(time.time()), "_id": args.cid, "beg": args.frombeginning})
+    
     app.run(port=args.cport)
 
 if __name__ == "__main__":

@@ -54,9 +54,18 @@ def post_request(url, data):
         
     return res.content.decode()
 
+def timehash(timestamp):
+    return timestamp % 3
+
 @app.route('/')
 def main():
     return "Home"
+
+@app.route('/beginning/<topic>', methods=['POST'])
+def send_beg(topic):
+    dat = json.loads(request.data.encode())
+    print(dat)
+
 
 @app.route('/send_topic/<topic>', methods=['POST'])
 def send_topic(topic):
@@ -64,6 +73,11 @@ def send_topic(topic):
     topic_data = dat['data']
     timestamp = dat['time']
     _id = dat['_id']
+
+    with open(broker_fs / topic / f"p{timehash(timestamp)}", 'a+') as f:
+        f.seek(0)
+        f.write(f"{timestamp} {topic_data}\n")
+
     with open("subscribe_list.json") as f:
         ports = json.load(f)[topic]
     
@@ -98,7 +112,6 @@ def subscribe_topic(topic):
         with open(subscribe_list) as f:
             try:
                 data = json.load(f)
-                print(data)
                 if topic not in data.keys():
                     data[topic] = [port]
                 elif port not in data[topic]:
