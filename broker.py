@@ -1,11 +1,19 @@
 import json
+import argparse
 from pathlib import Path
+
 import requests
 from flask import Flask, request
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--port", help="Set broker port")
+parser.add_argument("-i", "--id", help="Set broker ID")
+args = parser.parse_args()
+
 app = Flask(__name__)
 
 root = Path.cwd().resolve()
-filename = "Broker_1"
+filename = f"Broker_{args.id}"
 subscribe_list = root / "subscribe_list.json"
 broker_fs = (root / filename).resolve()
 
@@ -17,7 +25,7 @@ def main():
 def send_topic(topic):
     data = json.loads(request.data.decode())
     print(data)
-    requests.post('http://127.0.0.1:6060/', json={topic: "test"})
+    # requests.post('http://127.0.0.1:6060/', json={topic: "test"})
     return "sent"
 
 @app.route('/create_topic/<topic>')
@@ -82,4 +90,4 @@ def poll():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=args.port, debug=True, use_reloader=True)

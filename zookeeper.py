@@ -1,10 +1,17 @@
 import time
 import threading
 import random
+import argparse
 
 from pathlib import Path
 from flask import Flask
 import requests
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--port", help="zookeeper port", type=int, required=True)
+parser.add_argument("-b", "--brokers", help="Broker ports")
+parser.add_argument("-t", "--time", help="polling interval", default=2)
+pargs = parser.parse_args()
 
 root = Path.cwd().resolve()
 brokers = []
@@ -33,7 +40,6 @@ def polling(args):
                 print("---------Follower----------", args)
             
             print(res, threading.get_native_id(), brokers)
-            time.sleep(2)
         except Exception as e:
             if flag:
                 flag = False
@@ -44,6 +50,7 @@ def polling(args):
                 print(f"-------{args}, has died-------")
             else:
                 print("----Not Started----", args)        
+        time.sleep(pargs.time)
 
 
 @app.route('/find_leader')
@@ -51,17 +58,18 @@ def find_leader():
     return str(leader)
 
 def main():
-    broker1 = threading.Thread(target=polling, args=(5000,))
+    broker_ports = [int(x) for x in pargs.brokers.split('-')]
+    broker1 = threading.Thread(target=polling, args=(broker_ports[0],))
     broker1.daemon = True
-    broker2 = threading.Thread(target=polling, args=(5001,))
+    broker2 = threading.Thread(target=polling, args=(broker_ports[1],))
     broker2.daemon = True
-    broker3 = threading.Thread(target=polling, args=(5002,))
+    broker3 = threading.Thread(target=polling, args=(broker_ports[2],))
     broker3.daemon = True
     broker1.start()
     broker2.start()
     broker3.start()
 
-    app.run(debug=False, use_reloader=False, port=8080)
+    app.run(debug=False, use_reloader=False, port=pargs.port)
     
 
 if __name__ == "__main__":
