@@ -17,15 +17,40 @@ filename = f"Broker_{args.id}"
 subscribe_list = root / "subscribe_list.json"
 broker_fs = (root / filename).resolve()
 
+def get_request(url):
+    flag = True
+    while flag:
+        try:
+            res = requests.get(url, timeout=1)
+            flag = False
+        except Exception as e:
+            print("Retrying..")
+        
+    return res.content.decode()
+
+def post_request(url, data):
+    flag = True
+    while flag:
+        try:
+            res = requests.post(url, json=data, timeout=1)
+            flag = False
+        except Exception as e:
+            print("Retrying..")
+        
+    return res.content.decode()
+
 @app.route('/')
 def main():
     return "Home"
 
 @app.route('/send_topic/<topic>', methods=['POST'])
 def send_topic(topic):
-    data = json.loads(request.data.decode())
-    print(data)
-    # requests.post('http://127.0.0.1:6060/', json={topic: "test"})
+    topic_data = json.loads(request.data.decode())
+    with open("subscribe_list.json") as f:
+        ports = json.load(f)[topic]
+    
+    for port in ports:
+        post_request(f"http://127.0.0.1:{port}", topic_data)
     return "sent"
 
 @app.route('/create_topic/<topic>')
@@ -74,8 +99,6 @@ def unsub_topic(topic):
     
     if port in data[topic]:
         data[topic].remove(port)
-        if data[topic] == []:
-            del data[topic]
     else:
         return "not subbed to this"
     
