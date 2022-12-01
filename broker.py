@@ -16,6 +16,21 @@ root = Path.cwd().resolve()
 filename = f"Broker_{args.id}"
 subscribe_list = root / "subscribe_list.json"
 broker_fs = (root / filename).resolve()
+logfile = (broker_fs / "logfile").resolve()
+
+
+def logger(_id, timestamp, topic, action):
+    if not logfile.exists():
+        logfile.touch()
+    
+    with open(logfile, "a") as f:
+        log = {
+            "Time": timestamp,
+            "Topic": topic,
+            "ID": _id,
+            "Action": action
+        }
+        f.write(f"{json.dumps(log)},\n")
 
 def get_request(url):
     flag = True
@@ -45,11 +60,15 @@ def main():
 
 @app.route('/send_topic/<topic>', methods=['POST'])
 def send_topic(topic):
-    topic_data = json.loads(request.data.decode())
+    dat = json.loads(request.data.decode())
+    topic_data = dat['data']
+    timestamp = dat['time']
+    _id = dat['_id']
     with open("subscribe_list.json") as f:
         ports = json.load(f)[topic]
     
     for port in ports:
+        logger(_id, timestamp, topic, "POST")
         post_request(f"http://127.0.0.1:{port}", topic_data)
     return "sent"
 
@@ -66,7 +85,10 @@ def create_topic(topic):
 
 @app.route('/subscribe_topic/<topic>', methods=['POST'])
 def subscribe_topic(topic):
-    port = json.loads(request.data.decode())['port']
+    dat = json.loads(request.data.decode())
+    port = dat['port']
+    timestamp = dat['time']
+    _sid = dat['_id']
     data = {}
     print(port)
     if not subscribe_list.exists():
@@ -88,12 +110,16 @@ def subscribe_topic(topic):
     
     with open(subscribe_list, "w") as f:
         json.dump(data, f)
-    
+    logger(_sid, timestamp, topic, "SUBSCRIBE")
     return "subscribed"
 
 @app.route('/unsub_topic/<topic>', methods=['POST'])
 def unsub_topic(topic):
-    port = json.loads(request.data.decode())['port']
+    dat = json.loads(request.data.decode())
+    port = dat['port']
+    timestamp = dat['time']
+    _id = dat['_id']
+
     with open(subscribe_list) as f:
         data = json.load(f)
     
@@ -104,6 +130,7 @@ def unsub_topic(topic):
     
     with open(subscribe_list, "w") as f:
         json.dump(data, f)
+    logger(_id, timestamp, topic, "UNSUBSCRIBE")
 
     return "unsubbed"
 

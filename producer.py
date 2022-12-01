@@ -5,6 +5,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-z", "--port", help="zookeeper port", type=int, required=True)
 parser.add_argument("-t", "--topic", help="enter the topic name", required=True)
+parser.add_argument("-i", "--pid", help="enter the pid", required=True)
 args = parser.parse_args()
 
 def get_request(url):
@@ -38,7 +39,9 @@ def main():
     while True:
         data_to_send = input()
         json_data = {
-            "data": data_to_send
+            "data": data_to_send,
+            "time": int(time.time()),
+            "_id": args.pid
         }
         post_request(f"http://127.0.0.1:{get_leader()}/send_topic/{args.topic}", json_data)
 
