@@ -2,6 +2,7 @@ import time
 import argparse
 import json
 import logging
+import threading
 
 log = logging.getLogger('werkzeug')
 log.disabled = True
@@ -14,7 +15,7 @@ parser.add_argument("-z", "--port", help="zookeeper port", type=int, required=Tr
 parser.add_argument("-c", "--cport", help="consumer port", type=int, required=True)
 parser.add_argument("-t", "--topic", help="enter the topic name", required=True)
 parser.add_argument("-i", "--cid", help="enter the cid", required=True)
-parser.add_argument("-b", "--from-beginning", type=int, help="receive topics information from start", required=True)
+parser.add_argument("-b", "--from-beginning", type=int, help="receive topics information from start", default=0)
 args = parser.parse_args()
 
 app = Flask(__name__)
