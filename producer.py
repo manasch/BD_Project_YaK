@@ -46,4 +46,7 @@ def main():
         post_request(f"http://127.0.0.1:{get_leader()}/send_topic/{args.topic}", json_data)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

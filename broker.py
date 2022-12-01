@@ -1,5 +1,6 @@
 import json
 import argparse
+import time
 from pathlib import Path
 
 import requests
@@ -12,6 +13,7 @@ args = parser.parse_args()
 
 app = Flask(__name__)
 
+NO_BROKERS = 3
 root = Path.cwd().resolve()
 filename = f"Broker_{args.id}"
 subscribe_list = root / "subscribe_list.json"
@@ -55,7 +57,7 @@ def post_request(url, data):
     return res.content.decode()
 
 def timehash(timestamp):
-    return timestamp % 3
+    return timestamp % NO_BROKERS
 
 @app.route('/')
 def main():
@@ -94,7 +96,7 @@ def create_topic(topic):
     topic_fs = broker_fs / topic
     if not topic_fs.exists():
         topic_fs.mkdir()
-    
+    logger(args.id, int(time.time()), topic, "CREATE_TOPIC")
     return "created"
 
 @app.route('/subscribe_topic/<topic>', methods=['POST'])
@@ -103,6 +105,7 @@ def subscribe_topic(topic):
     port = dat['port']
     timestamp = dat['time']
     _sid = dat['_id']
+    beg = dat['beg']
     data = {}
     print(port)
     if not subscribe_list.exists():
@@ -153,4 +156,4 @@ def poll():
 
 
 if __name__ == "__main__":
-    app.run(port=args.port, debug=True, use_reloader=True)
+    app.run(port=args.port, debug=False, use_reloader=False)
